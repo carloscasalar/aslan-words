@@ -1,4 +1,4 @@
-// Package aslanwords provides functions to generate random Aslan words.
+// Package aslanwords provides functions to generate-word random Aslan words.
 package aslanwords
 
 import (
@@ -9,7 +9,7 @@ import (
 )
 
 // Generate generates a random Aslan word with the given options.
-// If no options are provided, it will generate a word with a random number of syllables between 2 and 6.
+// If no options are provided, it will generate-word a word with a random number of syllables between 2 and 6.
 func Generate(ctx context.Context, opts ...GeneratorOption) (string, error) {
 	options := newGeneratorOptions()
 	for _, o := range opts {
@@ -29,7 +29,7 @@ func Generate(ctx context.Context, opts ...GeneratorOption) (string, error) {
 }
 
 // MustGenerate generates a random Aslan word with the given options.
-// If no options are provided, it will generate a word with a random number of syllables between 2 and 6.
+// If no options are provided, it will generate-word a word with a random number of syllables between 2 and 6.
 // If an error occurs, it will panic.
 func MustGenerate(ctx context.Context, opts ...GeneratorOption) string {
 	word, err := Generate(ctx, opts...)

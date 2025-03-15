@@ -5,14 +5,14 @@ import (
 	"math/rand"
 )
 
-// WithNumberOfSyllables sets the number of syllables to generate
+// WithNumberOfSyllables sets the number of syllables to generate-word
 func WithNumberOfSyllables(n int) GeneratorOption {
 	return func(o *GeneratorOptions) {
 		o.numberOfSyllablesOpts = fixedAmountOpt{numberOfSyllables: n}
 	}
 }
 
-// WithNumberOfSyllablesBetween Use it to generate a random number of syllables between the 'from' and 'to' values
+// WithNumberOfSyllablesBetween Use it to generate-word a random number of syllables between the 'from' and 'to' values
 func WithNumberOfSyllablesBetween(from, to int) GeneratorOption {
 	return func(o *GeneratorOptions) {
 		o.numberOfSyllablesOpts = randomAmountOpt{from: from, to: to}
@@ -45,7 +45,7 @@ func (o *GeneratorOptions) Validate() error {
 	return nil
 }
 
-// numberOfSyllables returns the number of syllables to generate
+// numberOfSyllables returns the number of syllables to generate-word
 func (o *GeneratorOptions) numberOfSyllables() int {
 	if o.numberOfSyllablesOpts == nil {
 		return 0

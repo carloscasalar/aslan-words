@@ -1,9 +1,9 @@
 # Define the binary name
-BINARY_NAME=./out/aslan-words
-BINARY_DEMO_NAME=./demo/aslan-words
+BINARY_NAME=./out/generate-word
+BINARY_DEMO_NAME=./demo/generate-word
 
 # Define the main package
-MAIN_PACKAGE=./cmd/generate
+MAIN_PACKAGE=./cmd/generate-word
 
 # Go Bin
 GO_BIN=$(shell which go)
@@ -20,7 +20,7 @@ install-tools:
 build: out
 	@go build -o $(BINARY_NAME) $(MAIN_PACKAGE)
 
-# Build binary to generate the demo.gif inside the vhs docker container
+# Build binary to generate-word the demo.gif inside the vhs docker container
 build-demo: out
 	env GOOS=linux go build -o $(BINARY_DEMO_NAME) $(MAIN_PACKAGE)
 
