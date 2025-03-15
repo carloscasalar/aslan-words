@@ -1,12 +1,12 @@
-// CLI util to generate aslan words
 package main
 
 import (
 	"context"
 	"fmt"
-	"github.com/carloscasalar/aslan-words"
 	"log"
 	"math/rand"
+
+	"github.com/carloscasalar/aslan-words/pkg/aslanwords"
 )
 
 func main() {
