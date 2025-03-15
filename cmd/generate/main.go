@@ -1,3 +1,4 @@
+// generate is a simple command line tool that generates Aslan words.
 package main
 
 import (
