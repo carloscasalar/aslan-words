@@ -1,4 +1,4 @@
-// Package aslanwords Contains the generation functions to generate Aslan words.
+// Package aslanwords provides functions to generate random Aslan words.
 package aslanwords
 
 import (

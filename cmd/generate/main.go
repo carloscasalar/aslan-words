@@ -1,12 +1,13 @@
-// CLI util to generate aslan words
+// generate is a simple command line tool that generates Aslan words.
 package main
 
 import (
 	"context"
 	"fmt"
-	"github.com/carloscasalar/aslan-words"
 	"log"
 	"math/rand"
+
+	"github.com/carloscasalar/aslan-words/pkg/aslanwords"
 )
 
 func main() {
