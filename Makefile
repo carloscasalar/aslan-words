@@ -39,9 +39,11 @@ lint:
 # Run all checks
 check: lint test
 
+# Generate a demo gif
 save-demo-gif: build-demo
 	docker run --rm -v ${PWD}/demo:/vhs ghcr.io/charmbracelet/vhs demo.tape
 
+# Publish the demo gif
 publish-demo-gif: build-demo
 	docker run --rm -v ${PWD}/demo:/vhs ghcr.io/charmbracelet/vhs demo.tape --publish
 
@@ -58,3 +60,13 @@ all: build
 	@true
 
 .PHONY: out build run test lint check clean all
+
+# Show help
+help:
+	@echo 'Usage: make <OPTIONS> ... <TARGETS>'
+	@echo ''
+	@echo 'Available targets are:'
+	@echo ''
+	@grep -E '^[ a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
+	awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+	@echo ''

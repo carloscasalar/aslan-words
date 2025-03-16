@@ -60,3 +60,5 @@ make build
 # Run the CLI
 ./out/generate-word --help
 ```
+
+![cli demo](https://vhs.charm.sh/vhs-1Q32iWML5hbc22NWhEPaYt.gif)
