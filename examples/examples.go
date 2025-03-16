@@ -1,3 +1,4 @@
+// Description: Example of how to use the aslanwords package to generate Aslan words.
 package main
 
 import (
