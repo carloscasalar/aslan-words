@@ -23,7 +23,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/carloscasalar/aslan-words/pkg/aslanwords"
+	"github.com/carloscasalar/aslan-words/v1/pkg/aslanwords"
 )
 
 func main() {
@@ -38,7 +38,6 @@ func main() {
 	word = aslanwords.MustGenerate(ctx, aslanwords.WithNumberOfSyllablesBetween(3, 6))
 	fmt.Printf("Aslan word with between 3 and 6 syllables: %s\n", word)
 }
-
 ```
 
 ## Testing
