@@ -1,4 +1,4 @@
-package aslanwords
+package syllable
 
 import (
 	"fmt"
@@ -83,9 +83,9 @@ var (
 	cvc = syllableDefinition{keyCVC, firstConsonant + vowel + lastConstant, 2, onlyVowelStartingSyllableKeys}
 )
 
-type templateDefinition []syllableDefinition
+type TemplateDefinition []syllableDefinition
 
-func (td templateDefinition) String() string {
+func (td TemplateDefinition) String() string {
 	s := ""
 	for _, sd := range td {
 		s = fmt.Sprintf("%s%s", s, sd.pattern)
@@ -93,20 +93,20 @@ func (td templateDefinition) String() string {
 	return s
 }
 
-func generateTemplate(numberOfSyllables int) templateDefinition {
+func GenerateTemplate(numberOfSyllables int) TemplateDefinition {
 	if numberOfSyllables < 1 {
 		return nil
 	}
 	return generateSyllables(numberOfSyllables, pickRandomSyllable([]syllableDefinition{v, cv, vc, cvc}))
 }
 
-func generateSyllables(remaining int, lastSyllable syllableDefinition) templateDefinition {
+func generateSyllables(remaining int, lastSyllable syllableDefinition) TemplateDefinition {
 	if remaining == 1 {
-		return templateDefinition{lastSyllable}
+		return TemplateDefinition{lastSyllable}
 	}
 	followedBy := lastSyllable.SyllablesThatCanFollowThis()
 	nextSyllable := pickRandomSyllable(followedBy)
-	return append(templateDefinition{lastSyllable}, generateSyllables(remaining-1, nextSyllable)...)
+	return append(TemplateDefinition{lastSyllable}, generateSyllables(remaining-1, nextSyllable)...)
 }
 
 func pickRandomSyllable(definitions []syllableDefinition) syllableDefinition {

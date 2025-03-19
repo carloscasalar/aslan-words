@@ -4,8 +4,10 @@ package aslanwords
 import (
 	"context"
 	"fmt"
-	"github.com/s0rg/fantasyname"
 	"math/rand"
+
+	"github.com/carloscasalar/aslan-words/v1/internal/syllable"
+	"github.com/s0rg/fantasyname"
 )
 
 // Generate generates a random Aslan word with the given options.
@@ -20,7 +22,7 @@ func Generate(ctx context.Context, opts ...GeneratorOption) (string, error) {
 		return "", fmt.Errorf("invalid options: %w", err)
 	}
 
-	wordTemplate := generateTemplate(options.numberOfSyllables())
+	wordTemplate := syllable.GenerateTemplate(options.numberOfSyllables())
 	gen, err := fantasyname.Compile(wordTemplate.String(), fantasyname.Collapse(true), fantasyname.RandFn(rand.Intn))
 	if err != nil {
 		return "", fmt.Errorf("unexpected error generating the aslan word: %w", err)
