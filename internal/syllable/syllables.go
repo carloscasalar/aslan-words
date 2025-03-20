@@ -33,6 +33,11 @@ type syllableDefinition struct {
 	followedByKeys []syllableKey
 }
 
+// Pattern returns the pattern of the syllable
+func (sd syllableDefinition) Pattern() string {
+	return string(sd.pattern)
+}
+
 // SyllablesThatCanFollowThis returns the syllables that can follow this syllable
 func (sd syllableDefinition) SyllablesThatCanFollowThis() []syllableDefinition {
 	syllableDefinitionByKey := map[syllableKey]syllableDefinition{

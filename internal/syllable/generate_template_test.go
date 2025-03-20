@@ -60,7 +60,7 @@ func TestGenerateTemplate_out_of_ten_syllables(t *testing.T) {
 			}
 
 			// When
-			template := syllable.GenerateTemplate(1, syllable.WithIntegerGenerator(chancesGenerator))
+			template := syllable.GenerateTemplate(1, syllable.WithSyllableChanceGenerator(chancesGenerator))
 
 			// Then
 			require.NotNil(t, template)
@@ -92,7 +92,7 @@ func TestGenerateTemplate_the_syllable_ending_with_constant(t *testing.T) {
 					chancesGenerator = chanceGeneratorThatWillGenerate(t, tc.firstSyllableChance, secondSyllableChanceOver10)
 
 					// When
-					template := syllable.GenerateTemplate(2, syllable.WithIntegerGenerator(chancesGenerator))
+					template := syllable.GenerateTemplate(2, syllable.WithSyllableChanceGenerator(chancesGenerator))
 
 					// Then
 					require.NotNil(t, template)
@@ -102,6 +102,53 @@ func TestGenerateTemplate_the_syllable_ending_with_constant(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGenerateTemplate_the_single_vowel_syllable_containing(t *testing.T) {
+	const (
+		vChance = 0
+
+		anyVowelTemplateButSingleAChance = 0
+		anyVowelTemplateButSingleEChance = 1
+		anyVowelTemplateButSingleIChance = 2
+		anyVowelTemplateButSingleOChance = 3
+		anyVowelTemplateButSingleUChance = 4
+	)
+	testCases := map[string]struct {
+		vowelTemplateChance int
+		singleVowelTemplate string
+	}{
+		"a single vowel A cannot be followed by a vowel template allowing single A": {anyVowelTemplateButSingleAChance, "(a)"},
+		"a single vowel E cannot be followed by a vowel template allowing single E": {anyVowelTemplateButSingleEChance, "(e)"},
+		"a single vowel I cannot be followed by a vowel template allowing single I": {anyVowelTemplateButSingleIChance, "(i)"},
+		"a single vowel O cannot be followed by a vowel template allowing single O": {anyVowelTemplateButSingleOChance, "(o)"},
+		"a single vowel U cannot be followed by a vowel template allowing single U": {anyVowelTemplateButSingleUChance, "(u)"},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			for secondVowelTemplateChanceOver10 := range 10 {
+				t.Run(fmt.Sprintf("when template chance for the second vowel syllable is %d/10", secondVowelTemplateChanceOver10+1), func(t *testing.T) {
+					var syllableChancesGenerator syllable.GenerateRandomIntegerUpToFn
+					// Given
+					syllableChancesGenerator = chanceGeneratorThatWillGenerate(t, vChance, vChance)
+					vowelTemplateChanceGenerator := chanceGeneratorThatWillGenerate(t, tc.vowelTemplateChance, secondVowelTemplateChanceOver10)
+
+					// When
+					template := syllable.GenerateTemplate(2,
+						syllable.WithSyllableChanceGenerator(syllableChancesGenerator),
+						syllable.WithVowelTemplateChanceGenerator(vowelTemplateChanceGenerator),
+					)
+
+					// Then
+					require.NotNil(t, template)
+					require.Len(t, template, 2)
+					assert.NotContains(t, template[1].Pattern(), tc.singleVowelTemplate, "the second syllable template shouldn't contain the possibility of having the same single vowel", template.SyllableKeySequence()[0])
+				})
+			}
+		})
+	}
+
 }
 
 func chanceGeneratorThatWillGenerate(t *testing.T, sequence ...int) syllable.GenerateRandomIntegerUpToFn {

@@ -38,7 +38,7 @@ func GenerateTemplate(numberOfSyllables int, opts ...TemplateOption) TemplateDef
 		return nil
 	}
 	options := applyTemplateOptions(opts...)
-	sequenceGenerator := newSyllableSequenceBuilder(options.integerGenerator)
+	sequenceGenerator := newSyllableSequenceBuilder(options.syllableChanceGenerator)
 	return sequenceGenerator.randomSyllableSequence(numberOfSyllables)
 }
 
@@ -85,19 +85,28 @@ type GenerateRandomIntegerUpToFn func(int) int
 type TemplateOption func(*templateOptions)
 
 type templateOptions struct {
-	integerGenerator GenerateRandomIntegerUpToFn
+	syllableChanceGenerator      GenerateRandomIntegerUpToFn
+	vowelTemplateChanceGenerator GenerateRandomIntegerUpToFn
 }
 
-// WithIntegerGenerator sets the random number generator for the template generation
-func WithIntegerGenerator(fn GenerateRandomIntegerUpToFn) TemplateOption {
+// WithSyllableChanceGenerator sets the random number generator to choose the syllable using its weight over all the possible syllables
+func WithSyllableChanceGenerator(fn GenerateRandomIntegerUpToFn) TemplateOption {
 	return func(o *templateOptions) {
-		o.integerGenerator = fn
+		o.syllableChanceGenerator = fn
+	}
+}
+
+// WithVowelTemplateChanceGenerator sets the random number generator to choose the vowel using its weight over all the possible vowels
+func WithVowelTemplateChanceGenerator(fn GenerateRandomIntegerUpToFn) TemplateOption {
+	return func(o *templateOptions) {
+		o.vowelTemplateChanceGenerator = fn
 	}
 }
 
 func applyTemplateOptions(opts ...TemplateOption) *templateOptions {
 	opt := &templateOptions{
-		integerGenerator: rand.IntN, // default random number generator
+		syllableChanceGenerator:      rand.IntN,
+		vowelTemplateChanceGenerator: rand.IntN,
 	}
 	for _, o := range opts {
 		o(opt)
