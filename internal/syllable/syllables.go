@@ -20,7 +20,7 @@ const (
 
 var (
 	anySyllableKeys               = []syllableKey{keyV, keyCV, keyVC, keyCVC}
-	onlyVowelStartingSyllableKeys = []syllableKey{keyV, keyCV}
+	onlyVowelStartingSyllableKeys = []syllableKey{keyV, keyVC}
 )
 
 type syllableDefinition struct {

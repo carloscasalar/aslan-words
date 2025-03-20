@@ -1,6 +1,7 @@
 package syllable_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/carloscasalar/aslan-words/v1/internal/syllable"
@@ -66,5 +67,49 @@ func TestGenerateTemplate_out_of_ten_syllables(t *testing.T) {
 			require.Len(t, template.SyllableKeySequence(), 1, "only one syllable is expected to be generated")
 			assert.Equal(t, tc.expectedSyllableKey, template.SyllableKeySequence()[0], "out of ten times, when chance is %d, the expected syllable key is %s", tc.chance, tc.expectedSyllableKey)
 		})
+	}
+}
+
+func TestGenerateTemplate_the_syllable_ending_with_constant(t *testing.T) {
+	const (
+		vcChance  = 6
+		cvcChance = 8
+	)
+	testCases := map[string]struct {
+		firstSyllableChance   int
+		forbiddenSyllableKeys []string
+	}{
+		"VC cannot be followed by a a syllable starting with a consonant":  {vcChance, []string{"CV", "CVC"}},
+		"CVC cannot be followed by a a syllable starting with a consonant": {cvcChance, []string{"CV", "CVC"}},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			for secondSyllableChanceOver10 := range 10 {
+				t.Run(fmt.Sprintf("when chance for the second syllable is %d/10", secondSyllableChanceOver10+1), func(t *testing.T) {
+					var chancesGenerator syllable.GenerateRandomIntegerUpToFn
+					// Given
+					chancesGenerator = chanceGeneratorThatWillGenerate(t, tc.firstSyllableChance, secondSyllableChanceOver10)
+
+					// When
+					template := syllable.GenerateTemplate(2, syllable.WithIntegerGenerator(chancesGenerator))
+
+					// Then
+					require.NotNil(t, template)
+					require.Len(t, template.SyllableKeySequence(), 2)
+					assert.NotContains(t, tc.forbiddenSyllableKeys, template.SyllableKeySequence()[1], "the second syllable should not be %s but is %s", tc.forbiddenSyllableKeys, template.SyllableKeySequence()[1])
+				})
+			}
+		})
+	}
+}
+
+func chanceGeneratorThatWillGenerate(t *testing.T, sequence ...int) syllable.GenerateRandomIntegerUpToFn {
+	var i int
+	return func(n int) int {
+		require.GreaterOrEqual(t, len(sequence), i, "unexpected call to chance generator for the %d time", i+1)
+		chance := sequence[i]
+		i++
+		return chance
 	}
 }
