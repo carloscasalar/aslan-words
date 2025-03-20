@@ -17,6 +17,15 @@ func (td TemplateDefinition) String() string {
 	return s
 }
 
+// TemplateSequence returns the sequence of template syllables in the template
+func (td TemplateDefinition) TemplateSequence() []string {
+	sequence := make([]string, len(td))
+	for i, sd := range td {
+		sequence[i] = string(sd.Template())
+	}
+	return sequence
+}
+
 // SyllableKeySequence returns the sequence of keys of the syllables in the template where:
 // - `V` is a syllable made of an aslan vowel
 // - `CV` is an aslan consonant followed by an aslan vowel
@@ -38,17 +47,18 @@ func GenerateTemplate(numberOfSyllables int, opts ...TemplateOption) TemplateDef
 		return nil
 	}
 	options := applyTemplateOptions(opts...)
-	sequenceGenerator := newSyllableSequenceBuilder(options.syllableChanceGenerator)
+	sequenceGenerator := newSyllableSequenceBuilder(options)
 	return sequenceGenerator.randomSyllableSequence(numberOfSyllables)
 }
 
 type syllableSequenceBuilder struct {
-	generateRandomIntegerUpTo GenerateRandomIntegerUpToFn
-	lastSyllableGenerated     syllableDefinition
+	generateRandomIntegerUpTo    GenerateRandomIntegerUpToFn
+	vowelTemplateChanceGenerator GenerateRandomIntegerUpToFn
+	lastSyllableGenerated        syllableDefinition
 }
 
-func newSyllableSequenceBuilder(integerGenerator GenerateRandomIntegerUpToFn) *syllableSequenceBuilder {
-	return &syllableSequenceBuilder{generateRandomIntegerUpTo: integerGenerator}
+func newSyllableSequenceBuilder(opt *templateOptions) *syllableSequenceBuilder {
+	return &syllableSequenceBuilder{generateRandomIntegerUpTo: opt.syllableChanceGenerator, vowelTemplateChanceGenerator: opt.vowelTemplateChanceGenerator}
 }
 
 func (b *syllableSequenceBuilder) randomSyllableSequence(numberOfSyllables int, previousSyllables ...syllableDefinition) []syllableDefinition {
@@ -56,10 +66,11 @@ func (b *syllableSequenceBuilder) randomSyllableSequence(numberOfSyllables int, 
 		return previousSyllables
 	}
 	if len(previousSyllables) == 0 {
-		return b.randomSyllableSequence(numberOfSyllables-1, b.pickRandomSyllable([]syllableDefinition{v, cv, vc, cvc}))
+		return b.randomSyllableSequence(numberOfSyllables-1, b.pickRandomSyllable(allSyllables()))
 	}
 	lastSyllable := previousSyllables[len(previousSyllables)-1]
 	nextSyllable := b.pickRandomSyllable(lastSyllable.SyllablesThatCanFollowThis())
+	lastSyllable.EnforceNoConsecutiveSingleVowels(nextSyllable, b.vowelTemplateChanceGenerator)
 	return b.randomSyllableSequence(numberOfSyllables-1, append(previousSyllables, nextSyllable)...)
 }
 

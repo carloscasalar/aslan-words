@@ -2,6 +2,7 @@ package syllable_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/carloscasalar/aslan-words/v1/internal/syllable"
@@ -104,49 +105,60 @@ func TestGenerateTemplate_the_syllable_ending_with_constant(t *testing.T) {
 	}
 }
 
-func TestGenerateTemplate_the_single_vowel_syllable_containing(t *testing.T) {
-	t.Skip("Constraint not yet implemented")
+func TestGenerateTemplate_when_two_consecutive_vowels_are_generated(t *testing.T) {
 	const (
-		vChance = 0
+		vowelChance = 0
 
-		anyVowelTemplateButSingleAChance = 0
-		anyVowelTemplateButSingleEChance = 1
-		anyVowelTemplateButSingleIChance = 2
-		anyVowelTemplateButSingleOChance = 3
-		anyVowelTemplateButSingleUChance = 4
+		swapAChance        = 0
+		swapEChance        = 1
+		swapIChance        = 2
+		swapOChance        = 3
+		swapUChance        = 4
+		swapAReverseChance = 5
+		swapEReverseChance = 6
+		swapIReverseChance = 7
+		swapOReverseChance = 8
+		swapUReverseChance = 9
 	)
 	testCases := map[string]struct {
-		vowelTemplateChance int
-		singleVowelTemplate string
+		vowelTemplateChance          int
+		singleVowelTemplate          string
+		expectedWeightFirstSyllable  int
+		expectedWeightSecondSyllable int
 	}{
-		"a single vowel A cannot be followed by a vowel template allowing single A": {anyVowelTemplateButSingleAChance, "(a)"},
-		"a single vowel E cannot be followed by a vowel template allowing single E": {anyVowelTemplateButSingleEChance, "(e)"},
-		"a single vowel I cannot be followed by a vowel template allowing single I": {anyVowelTemplateButSingleIChance, "(i)"},
-		"a single vowel O cannot be followed by a vowel template allowing single O": {anyVowelTemplateButSingleOChance, "(o)"},
-		"a single vowel U cannot be followed by a vowel template allowing single U": {anyVowelTemplateButSingleUChance, "(u)"},
+		"and first template doesn't contain single vowel A the second template does": {swapAChance, "(a)", 0, 10},
+		"and first template doesn't contain single vowel E the second template does": {swapEChance, "(e)", 0, 6},
+		"and first template doesn't contain single vowel I the second template does": {swapIChance, "(i)", 0, 4},
+		"and first template doesn't contain single vowel O the second template does": {swapOChance, "(o)", 0, 2},
+		"and first template doesn't contain single vowel U the second template does": {swapUChance, "(u)", 0, 1},
+		"and first template contains single vowel A the second template doesn't":     {swapAReverseChance, "(a)", 10, 0},
+		"and first template contains single vowel E the second template doesn't":     {swapEReverseChance, "(e)", 6, 0},
+		"and first template contains single vowel I the second template doesn't":     {swapIReverseChance, "(i)", 4, 0},
+		"and first template contains single vowel O the second template doesn't":     {swapOReverseChance, "(o)", 2, 0},
+		"and first template contains single vowel U the second template doesn't":     {swapUReverseChance, "(u)", 1, 0},
 	}
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			for secondVowelTemplateChanceOver10 := range 10 {
-				t.Run(fmt.Sprintf("when template chance for the second vowel syllable is %d/10", secondVowelTemplateChanceOver10+1), func(t *testing.T) {
-					var syllableChancesGenerator syllable.GenerateRandomIntegerUpToFn
-					// Given
-					syllableChancesGenerator = chanceGeneratorThatWillGenerate(t, vChance, vChance)
-					vowelTemplateChanceGenerator := chanceGeneratorThatWillGenerate(t, tc.vowelTemplateChance, secondVowelTemplateChanceOver10)
+			var syllableChancesGenerator syllable.GenerateRandomIntegerUpToFn
+			// Given
+			syllableChancesGenerator = chanceGeneratorThatWillGenerate(t, vowelChance, vowelChance)
+			vowelTemplateChanceGenerator := chanceGeneratorThatWillGenerate(t, tc.vowelTemplateChance)
 
-					// When
-					template := syllable.GenerateTemplate(2,
-						syllable.WithSyllableChanceGenerator(syllableChancesGenerator),
-						syllable.WithVowelTemplateChanceGenerator(vowelTemplateChanceGenerator),
-					)
+			// When
+			template := syllable.GenerateTemplate(2,
+				syllable.WithSyllableChanceGenerator(syllableChancesGenerator),
+				syllable.WithVowelTemplateChanceGenerator(vowelTemplateChanceGenerator),
+			)
 
-					// Then
-					require.NotNil(t, template)
-					require.Len(t, template, 2)
-					assert.NotContains(t, template[1].Template(), tc.singleVowelTemplate, "the second syllable template shouldn't contain the possibility of having the same single vowel", template.SyllableKeySequence()[0])
-				})
-			}
+			// Then
+			require.NotNil(t, template)
+			require.Equal(t, []string{"V", "V"}, template.SyllableKeySequence(), "both syllables should be vowel syllable templates")
+
+			singleVowelOccurrencesOnFirstSyllableTemplate := strings.Count(template.TemplateSequence()[0], tc.singleVowelTemplate)
+			assert.Equal(t, tc.expectedWeightFirstSyllable, singleVowelOccurrencesOnFirstSyllableTemplate)
+			singleVowelOccurrencesOnSecondSyllableTemplate := strings.Count(template.TemplateSequence()[1], tc.singleVowelTemplate)
+			assert.Equal(t, tc.expectedWeightSecondSyllable, singleVowelOccurrencesOnSecondSyllableTemplate)
 		})
 	}
 
