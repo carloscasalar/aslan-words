@@ -12,7 +12,7 @@ type TemplateDefinition []syllableDefinition
 func (td TemplateDefinition) String() string {
 	s := ""
 	for _, sd := range td {
-		s = fmt.Sprintf("%s%s", s, sd.Pattern())
+		s = fmt.Sprintf("%s%s", s, sd.Template())
 	}
 	return s
 }
@@ -44,7 +44,7 @@ func GenerateTemplate(numberOfSyllables int, opts ...TemplateOption) TemplateDef
 
 type syllableSequenceBuilder struct {
 	generateRandomIntegerUpTo GenerateRandomIntegerUpToFn
-	lastSyllableGenerated     *staticSyllableDefinition
+	lastSyllableGenerated     syllableDefinition
 }
 
 func newSyllableSequenceBuilder(integerGenerator GenerateRandomIntegerUpToFn) *syllableSequenceBuilder {

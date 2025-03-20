@@ -144,7 +144,7 @@ func TestGenerateTemplate_the_single_vowel_syllable_containing(t *testing.T) {
 					// Then
 					require.NotNil(t, template)
 					require.Len(t, template, 2)
-					assert.NotContains(t, template[1].Pattern(), tc.singleVowelTemplate, "the second syllable template shouldn't contain the possibility of having the same single vowel", template.SyllableKeySequence()[0])
+					assert.NotContains(t, template[1].Template(), tc.singleVowelTemplate, "the second syllable template shouldn't contain the possibility of having the same single vowel", template.SyllableKeySequence()[0])
 				})
 			}
 		})
