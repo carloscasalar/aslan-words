@@ -1,8 +1,9 @@
+// Package syllable provides the generation of templates to generate valid aslan syllable sequences.
 package syllable
 
 import (
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 )
 
 /*
@@ -83,6 +84,7 @@ var (
 	cvc = syllableDefinition{keyCVC, firstConsonant + vowel + lastConstant, 2, onlyVowelStartingSyllableKeys}
 )
 
+// TemplateDefinition is a sequence of syllables that can be used to generate-word an Aslan word
 type TemplateDefinition []syllableDefinition
 
 func (td TemplateDefinition) String() string {
@@ -93,28 +95,45 @@ func (td TemplateDefinition) String() string {
 	return s
 }
 
-func GenerateTemplate(numberOfSyllables int) TemplateDefinition {
+// GenerateTemplate generates a template with the given number of syllables for an Aslan word
+// built with the rules of https://github.com/s0rg/fantasyname?tab=readme-ov-file#pattern-syntax
+// and the Aslan language rules
+func GenerateTemplate(numberOfSyllables int, opts ...TemplateOption) TemplateDefinition {
 	if numberOfSyllables < 1 {
 		return nil
 	}
-	return generateSyllables(numberOfSyllables, pickRandomSyllable([]syllableDefinition{v, cv, vc, cvc}))
+	options := applyTemplateOptions(opts...)
+	sequenceGenerator := newSyllableSequenceBuilder(options.integerGenerator)
+	return sequenceGenerator.randomSyllableSequence(numberOfSyllables)
 }
 
-func generateSyllables(remaining int, lastSyllable syllableDefinition) TemplateDefinition {
-	if remaining == 1 {
-		return TemplateDefinition{lastSyllable}
+type syllableSequenceBuilder struct {
+	generateRandomIntegerUpTo GenerateRandomIntegerUpToFn
+	lastSyllableGenerated     *syllableDefinition
+}
+
+func newSyllableSequenceBuilder(integerGenerator GenerateRandomIntegerUpToFn) *syllableSequenceBuilder {
+	return &syllableSequenceBuilder{generateRandomIntegerUpTo: integerGenerator}
+}
+
+func (b *syllableSequenceBuilder) randomSyllableSequence(numberOfSyllables int, previousSyllables ...syllableDefinition) []syllableDefinition {
+	if numberOfSyllables < 1 {
+		return previousSyllables
 	}
-	followedBy := lastSyllable.SyllablesThatCanFollowThis()
-	nextSyllable := pickRandomSyllable(followedBy)
-	return append(TemplateDefinition{lastSyllable}, generateSyllables(remaining-1, nextSyllable)...)
+	if len(previousSyllables) == 0 {
+		return b.randomSyllableSequence(numberOfSyllables-1, b.pickRandomSyllable([]syllableDefinition{v, cv, vc, cvc}))
+	}
+	lastSyllable := previousSyllables[len(previousSyllables)-1]
+	nextSyllable := b.pickRandomSyllable(lastSyllable.SyllablesThatCanFollowThis())
+	return b.randomSyllableSequence(numberOfSyllables-1, append(previousSyllables, nextSyllable)...)
 }
 
-func pickRandomSyllable(definitions []syllableDefinition) syllableDefinition {
+func (b *syllableSequenceBuilder) pickRandomSyllable(definitions []syllableDefinition) syllableDefinition {
 	totalWeight := 0
 	for _, def := range definitions {
 		totalWeight += def.weight
 	}
-	r := rand.Intn(totalWeight)
+	r := b.generateRandomIntegerUpTo(totalWeight)
 	for _, def := range definitions {
 		if r < def.weight {
 			return def
@@ -122,4 +141,31 @@ func pickRandomSyllable(definitions []syllableDefinition) syllableDefinition {
 		r -= def.weight
 	}
 	return definitions[len(definitions)-1]
+}
+
+// GenerateRandomIntegerUpToFn is a function that is expected to generate a positive integer from zero up to the given number
+type GenerateRandomIntegerUpToFn func(int) int
+
+// TemplateOption is a function that sets options for the template generation
+type TemplateOption func(*templateOptions)
+
+type templateOptions struct {
+	integerGenerator GenerateRandomIntegerUpToFn
+}
+
+// WithIntegerGenerator sets the random number generator for the template generation
+func WithIntegerGenerator(fn GenerateRandomIntegerUpToFn) TemplateOption {
+	return func(o *templateOptions) {
+		o.integerGenerator = fn
+	}
+}
+
+func applyTemplateOptions(opts ...TemplateOption) *templateOptions {
+	opt := &templateOptions{
+		integerGenerator: rand.IntN, // default random number generator
+	}
+	for _, o := range opts {
+		o(opt)
+	}
+	return opt
 }
