@@ -23,7 +23,13 @@ var (
 	onlyVowelStartingSyllableKeys = []syllableKey{keyV, keyVC}
 )
 
-type syllableDefinition struct {
+type syllableDefinition interface {
+	Key() syllableKey
+	Weight() int
+	Pattern() template
+	SyllablesThatCanFollowThis() []syllableDefinition
+}
+type staticSyllableDefinition struct {
 	key syllableKey
 	// pattern template of the syllable
 	pattern template
@@ -33,13 +39,23 @@ type syllableDefinition struct {
 	followedByKeys []syllableKey
 }
 
+// Key returns the key of the syllable
+func (sd staticSyllableDefinition) Key() syllableKey {
+	return sd.key
+}
+
+// Weight returns the weight of the syllable
+func (sd staticSyllableDefinition) Weight() int {
+	return sd.weight
+}
+
 // Pattern returns the pattern of the syllable
-func (sd syllableDefinition) Pattern() string {
-	return string(sd.pattern)
+func (sd staticSyllableDefinition) Pattern() template {
+	return sd.pattern
 }
 
 // SyllablesThatCanFollowThis returns the syllables that can follow this syllable
-func (sd syllableDefinition) SyllablesThatCanFollowThis() []syllableDefinition {
+func (sd staticSyllableDefinition) SyllablesThatCanFollowThis() []syllableDefinition {
 	syllableDefinitionByKey := map[syllableKey]syllableDefinition{
 		keyV:   v,
 		keyCV:  cv,
@@ -54,8 +70,8 @@ func (sd syllableDefinition) SyllablesThatCanFollowThis() []syllableDefinition {
 }
 
 var (
-	v   = syllableDefinition{keyV, vowel, 3, anySyllableKeys}
-	cv  = syllableDefinition{keyCV, firstConsonant + vowel, 3, anySyllableKeys}
-	vc  = syllableDefinition{keyVC, vowel + lastConstant, 2, onlyVowelStartingSyllableKeys}
-	cvc = syllableDefinition{keyCVC, firstConsonant + vowel + lastConstant, 2, onlyVowelStartingSyllableKeys}
+	v   = staticSyllableDefinition{keyV, vowel, 3, anySyllableKeys}
+	cv  = staticSyllableDefinition{keyCV, firstConsonant + vowel, 3, anySyllableKeys}
+	vc  = staticSyllableDefinition{keyVC, vowel + lastConstant, 2, onlyVowelStartingSyllableKeys}
+	cvc = staticSyllableDefinition{keyCVC, firstConsonant + vowel + lastConstant, 2, onlyVowelStartingSyllableKeys}
 )

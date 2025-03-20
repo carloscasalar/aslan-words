@@ -12,7 +12,7 @@ type TemplateDefinition []syllableDefinition
 func (td TemplateDefinition) String() string {
 	s := ""
 	for _, sd := range td {
-		s = fmt.Sprintf("%s%s", s, sd.pattern)
+		s = fmt.Sprintf("%s%s", s, sd.Pattern())
 	}
 	return s
 }
@@ -25,7 +25,7 @@ func (td TemplateDefinition) String() string {
 func (td TemplateDefinition) SyllableKeySequence() []string {
 	sequence := make([]string, len(td))
 	for i, sd := range td {
-		sequence[i] = strings.ToUpper(string(sd.key))
+		sequence[i] = strings.ToUpper(string(sd.Key()))
 	}
 	return sequence
 }
@@ -44,7 +44,7 @@ func GenerateTemplate(numberOfSyllables int, opts ...TemplateOption) TemplateDef
 
 type syllableSequenceBuilder struct {
 	generateRandomIntegerUpTo GenerateRandomIntegerUpToFn
-	lastSyllableGenerated     *syllableDefinition
+	lastSyllableGenerated     *staticSyllableDefinition
 }
 
 func newSyllableSequenceBuilder(integerGenerator GenerateRandomIntegerUpToFn) *syllableSequenceBuilder {
@@ -66,14 +66,14 @@ func (b *syllableSequenceBuilder) randomSyllableSequence(numberOfSyllables int, 
 func (b *syllableSequenceBuilder) pickRandomSyllable(definitions []syllableDefinition) syllableDefinition {
 	totalWeight := 0
 	for _, def := range definitions {
-		totalWeight += def.weight
+		totalWeight += def.Weight()
 	}
 	chance := b.generateRandomIntegerUpTo(totalWeight)
 	for _, def := range definitions {
-		if chance < def.weight {
+		if chance < def.Weight() {
 			return def
 		}
-		chance -= def.weight
+		chance -= def.Weight()
 	}
 	return definitions[len(definitions)-1]
 }

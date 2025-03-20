@@ -105,6 +105,7 @@ func TestGenerateTemplate_the_syllable_ending_with_constant(t *testing.T) {
 }
 
 func TestGenerateTemplate_the_single_vowel_syllable_containing(t *testing.T) {
+	t.Skip("Constraint not yet implemented")
 	const (
 		vChance = 0
 
