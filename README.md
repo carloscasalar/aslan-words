@@ -60,4 +60,4 @@ make build
 ./out/generate-word --help
 ```
 
-![cli demo](https://vhs.charm.sh/vhs-1Q32iWML5hbc22NWhEPaYt.gif)
+![cli demo](demo/demo.gif)

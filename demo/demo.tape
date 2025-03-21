@@ -2,17 +2,22 @@
 Output demo.gif
 
 Set FontSize 12
-Set Width 900
-Set Height 550
+Set Width 350
+Set Height 300
 Set TypingSpeed 100ms
 Set Theme "Catppuccin Frappe"
-Set Margin 20
+Set Margin 1
 Set BorderRadius 10
 Set MarginFill "#6B50FF"
 Set WindowBar Colorful
 
 # Type a command in the terminal.
 Type "./generate-word -n 3"
-Show
 Enter
-Sleep 15s
+Sleep 5s
+Type "./generate-word -n 5"
+Enter
+Sleep 5s
+Type "./generate-word -n 7"
+Enter
+Sleep 5s
