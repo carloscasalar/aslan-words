@@ -12,43 +12,33 @@ GO_BIN=$(shell which go)
 out:
 	mkdir -p out
 
-# Install the required tools for go generators
-install-tools:
+install-tools: ## Install the required tools for go tools to develop
 	@go install tool
 
-# Build the Go application
-build: out
+build: out ## Build the Go application
 	@go build -o $(BINARY_NAME) $(MAIN_PACKAGE)
 
-# Build binary to generate-word the demo.gif inside the vhs docker container
-build-demo: out
+build-demo: out ## Build binary to generate-word the demo.gif inside the vhs docker container
 	env GOOS=linux go build -o $(BINARY_DEMO_NAME) $(MAIN_PACKAGE)
 
-# Run the Go application
-run: build
+run: build ## Run the Go application, you can use -- to pass arguments to the binary
 	$(BINARY_NAME) $(filter-out $@,$(MAKECMDGOALS))
 
-# Run tests
-test:
+test: ## Run tests
 	@go test -v ./...
 
-# Run the linter
-lint:
+lint: ## Run the linter
 	@revive -config .revive.toml -formatter friendly ./...
 
-# Run all checks
-check: lint test
+check: lint test ## Run all checks: lint and test
 
-# Generate a demo gif
-save-demo-gif: build-demo
+save-demo-gif: build-demo ## Generate a demo gif
 	docker run --rm -v ${PWD}/demo:/vhs ghcr.io/charmbracelet/vhs demo.tape
 
-# Publish the demo gif
-publish-demo-gif: build-demo
+publish-demo-gif: build-demo ## Publish the demo gif
 	docker run --rm -v ${PWD}/demo:/vhs ghcr.io/charmbracelet/vhs demo.tape --publish
 
-# Clean up build artifacts
-clean:
+clean: ## Clean up build artifacts
 	rm -f $(BINARY_NAME)
 	rm -f $(BINARY_DEMO_NAME)
 
