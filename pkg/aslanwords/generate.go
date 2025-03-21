@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/carloscasalar/aslan-words/v1/internal/syllable"
+	"github.com/carloscasalar/aslan-words/internal/syllable"
 	"github.com/s0rg/fantasyname"
 )
 

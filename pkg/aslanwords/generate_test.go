@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/carloscasalar/aslan-words/v1/pkg/aslanwords"
+	"github.com/carloscasalar/aslan-words/pkg/aslanwords"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

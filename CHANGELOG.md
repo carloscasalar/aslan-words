@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2025-03-21
 
-### Golang lib `github.com/carloscasalar/aslan-words/v1`
+### Golang lib `github.com/carloscasalar/aslan-words`
 
 - Added:
   -  `aslanwords.Generate` and `aslanwords.MustGenerate` functions to generate aslan words.

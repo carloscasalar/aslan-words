@@ -23,7 +23,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/carloscasalar/aslan-words/v1/pkg/aslanwords"
+	"github.com/carloscasalar/aslan-words/pkg/aslanwords"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module github.com/carloscasalar/aslan-words/v1
+module github.com/carloscasalar/aslan-words
 
 go 1.24.1
 

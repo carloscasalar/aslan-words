@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/carloscasalar/aslan-words/v1/internal/syllable"
+	"github.com/carloscasalar/aslan-words/internal/syllable"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
