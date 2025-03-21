@@ -11,6 +11,12 @@ const (
 	firstConsonant template = `<(f)|(f)|(f)|(f)|(f)|(ft)|(ft)|(ft)|(h)|(h)|(h)|(h)|(h)|(h)|(h)|(hf)|(hf)|(hk)|(hk)|(hk)|(hk)|(hk)|(hl)|(hl)|(hl)|(hr)|(hr)|(hr)|(ht)|(ht)|(ht)|(ht)|(ht)|(hw)|(hw)|(k)|(k)|(k)|(k)|(k)|(k)|(k)|(kh)|(kh)|(kh)|(kh)|(kh)|(kh)|(kht)|(kht)|(kht)|(kht)|(kt)|(kt)|(kt)|(kt)|(l)|(l)|(r)|(r)|(r)|(r)|(s)|(s)|(s)|(s)|(st)|(st)|(st)|(t)|(t)|(t)|(t)|(t)|(t)|(t)|(t)|(tl)|(tl)|(tr)|(tr)|(w)|(w)|(w)|(w)|(w)|(w)|>`
 	vowel          template = "<(a)|(a)|(a)|(a)|(a)|(a)|(a)|(a)|(a)|(a)|(ai)|(ai)|(ai)|(ao)|(ao)|(au)|(e)|(e)|(e)|(e)|(e)|(e)|(ea)|(ea)|(ea)|(ea)|(ea)|(ea)|(ei)|(ei)|(i)|(i)|(i)|(i)|(iy)|(iy)|(iy)|(o)|(o)|(oa)|(oi)|(oi)|(ou)|(u)|(ua)|(ui)|(ya)|(yu)|>"
 	lastConstant   template = "<(h)|(h)|(h)|(h)|(h)|(h)|(h)|(h)|(h)|(h)|(kh)|(kh)|(kh)|(kh)|(l)|(l)|(l)|(lr)|(lr)|(lr)|(lr)|(r)|(r)|(r)|(r)|(r)|(rl)|(rl)|(rl)|(rl)|(s)|(s)|(s)|(s)|(s)|(w)|(w)|(w)|(w)|(w)|(w)|(')|(')|(')>"
+
+	singleA template = "(a)|"
+	singleE template = "(e)|"
+	singleI template = "(i)|"
+	singleO template = "(o)|"
+	singleU template = "(u)|"
 )
 
 var (
@@ -47,7 +53,7 @@ const (
 
 type templateSwap struct {
 	modifiedTemplate template
-	reverseSwap      swapKey
+	reverseSwapKey   swapKey
 }
 
 // swaps are used to enforce no consecutive single vowels are generated. They are meant to work as puzzle pieces
@@ -71,19 +77,19 @@ var allSwaps = []swapKey{
 
 type syllableKey string
 
+func (k syllableKey) StartsWithConsonant() bool {
+	return k[0] == 'c'
+}
+
+func (k syllableKey) EndsWithConsonant() bool {
+	return k[len(k)-1] == 'c'
+}
+
 const (
 	keyV   = "v"
 	keyCV  = "cv"
 	keyVC  = "vc"
 	keyCVC = "cvc"
-)
-
-const (
-	singleA template = "(a)|"
-	singleE template = "(e)|"
-	singleI template = "(i)|"
-	singleO template = "(o)|"
-	singleU template = "(u)|"
 )
 
 type syllableDefinition interface {
@@ -96,185 +102,104 @@ type syllableDefinition interface {
 	StartsWithConsonant() bool
 }
 
-type vowelSyllableDefinition struct {
-	vowelSwap *templateSwap
+type _syllableDefinition struct {
+	key                          syllableKey
+	weight                       int
+	vowelSwap                    *templateSwap
+	syllablesThatCanFollowThisFn func() []syllableDefinition
 }
 
-func newV() *vowelSyllableDefinition {
-	return &vowelSyllableDefinition{
-		vowelSwap: nil,
+func newV() *_syllableDefinition {
+	return &_syllableDefinition{
+		key:                          keyV,
+		weight:                       3,
+		syllablesThatCanFollowThisFn: allSyllables,
 	}
 }
 
-func (d *vowelSyllableDefinition) Key() syllableKey {
-	return keyV
+func newCV() *_syllableDefinition {
+	return &_syllableDefinition{
+		key:                          keyCV,
+		weight:                       3,
+		syllablesThatCanFollowThisFn: allSyllables,
+	}
 }
 
-func (d *vowelSyllableDefinition) Weight() int {
-	const chanceOfVowelSyllableOutOf10 = 3
-	return chanceOfVowelSyllableOutOf10
+func newVC() *_syllableDefinition {
+	return &_syllableDefinition{
+		key:                          keyVC,
+		weight:                       2,
+		syllablesThatCanFollowThisFn: onlyVowelStartingSyllables,
+	}
 }
 
-func (d *vowelSyllableDefinition) Template() template {
+func newCVC() *_syllableDefinition {
+	return &_syllableDefinition{
+		key:                          keyCVC,
+		weight:                       2,
+		syllablesThatCanFollowThisFn: onlyVowelStartingSyllables,
+	}
+}
+
+func (d *_syllableDefinition) Key() syllableKey {
+	return d.key
+}
+
+func (d *_syllableDefinition) Weight() int {
+	return d.weight
+}
+
+func (d *_syllableDefinition) vowelTemplate() template {
 	if d.vowelSwap == nil {
 		return vowel
 	}
 	return d.vowelSwap.modifiedTemplate
 }
 
-func (d *vowelSyllableDefinition) SwapVowelTemplate(swap templateSwap) {
-	d.vowelSwap = &swap
+func (d *_syllableDefinition) Template() template {
+	templateBuilder := new(strings.Builder)
+	for i, char := range d.key {
+		switch char {
+		case 'c':
+			if i == 0 {
+				templateBuilder.WriteString(string(firstConsonant))
+			} else {
+				templateBuilder.WriteString(string(lastConstant))
+			}
+		case 'v':
+			templateBuilder.WriteString(string(d.vowelTemplate()))
+		}
+	}
+
+	return template(templateBuilder.String())
 }
 
-func (d *vowelSyllableDefinition) EnforceNoConsecutiveSingleVowels(nextSyllable syllableDefinition, generateRandomSwapVowelFn GenerateRandomIntegerUpToFn) {
-	if nextSyllable.StartsWithConsonant() {
+func (d *_syllableDefinition) EnforceNoConsecutiveSingleVowels(nextSyllable syllableDefinition, generateRandomSwapVowelFn GenerateRandomIntegerUpToFn) {
+	if d.key.EndsWithConsonant() || nextSyllable.StartsWithConsonant() {
 		return
 	}
 	if d.vowelSwap == nil {
 		d.vowelSwap = pickRandomSwap(generateRandomSwapVowelFn)
 	}
-	nextSyllable.SwapVowelTemplate(swaps[d.vowelSwap.reverseSwap])
+	nextSyllable.SwapVowelTemplate(swaps[d.vowelSwap.reverseSwapKey])
 }
 
-func (d *vowelSyllableDefinition) SyllablesThatCanFollowThis() []syllableDefinition {
-	return allSyllables()
-}
-
-func (d *vowelSyllableDefinition) StartsWithConsonant() bool {
-	return false
-}
-
-type consonantVowelSyllableDefinition struct {
-	vowelSwap *templateSwap
-}
-
-func newCV() *consonantVowelSyllableDefinition {
-	return &consonantVowelSyllableDefinition{}
-}
-
-func (d *consonantVowelSyllableDefinition) Key() syllableKey {
-	return keyCV
-}
-
-func (d *consonantVowelSyllableDefinition) Weight() int {
-	const chanceOfCVSyllableOutOf10 = 3
-	return chanceOfCVSyllableOutOf10
-}
-
-func (d *consonantVowelSyllableDefinition) Template() template {
-	if d.vowelSwap == nil {
-		return firstConsonant + vowel
-	}
-	return firstConsonant + d.vowelSwap.modifiedTemplate
-}
-
-func (d *consonantVowelSyllableDefinition) SwapVowelTemplate(swap templateSwap) {
+func (d *_syllableDefinition) SwapVowelTemplate(swap templateSwap) {
 	d.vowelSwap = &swap
 }
 
-func (d *consonantVowelSyllableDefinition) EnforceNoConsecutiveSingleVowels(nextSyllable syllableDefinition, generateRandomVowelFn GenerateRandomIntegerUpToFn) {
-	if nextSyllable.StartsWithConsonant() {
-		return
-	}
-	if d.vowelSwap == nil {
-		d.vowelSwap = pickRandomSwap(generateRandomVowelFn)
-	}
-	nextSyllable.SwapVowelTemplate(swaps[d.vowelSwap.reverseSwap])
+func (d *_syllableDefinition) SyllablesThatCanFollowThis() []syllableDefinition {
+	return d.syllablesThatCanFollowThisFn()
 }
 
-func (d *consonantVowelSyllableDefinition) SyllablesThatCanFollowThis() []syllableDefinition {
-	return allSyllables()
-}
-
-func (d *consonantVowelSyllableDefinition) StartsWithConsonant() bool {
-	return true
-}
-
-type vowelConsonantSyllableDefinition struct {
-	vowelSwap *templateSwap
-}
-
-func newVC() *vowelConsonantSyllableDefinition {
-	return &vowelConsonantSyllableDefinition{}
-}
-
-func (d *vowelConsonantSyllableDefinition) Key() syllableKey {
-	return keyVC
-}
-
-func (d *vowelConsonantSyllableDefinition) Weight() int {
-	const chanceOfVCSyllableOutOf10 = 2
-	return chanceOfVCSyllableOutOf10
-}
-
-func (d *vowelConsonantSyllableDefinition) Template() template {
-	if d.vowelSwap == nil {
-		return vowel + lastConstant
-	}
-	return d.vowelSwap.modifiedTemplate + lastConstant
-}
-
-func (d *vowelConsonantSyllableDefinition) SwapVowelTemplate(swap templateSwap) {
-	d.vowelSwap = &swap
-}
-
-func (d *vowelConsonantSyllableDefinition) EnforceNoConsecutiveSingleVowels(_ syllableDefinition, _ GenerateRandomIntegerUpToFn) {
-	// VC ends with a consonant, so no restrictions with following syllables
-}
-
-func (d *vowelConsonantSyllableDefinition) SyllablesThatCanFollowThis() []syllableDefinition {
-	return onlyVowelStartingSyllables()
-}
-
-func (d *vowelConsonantSyllableDefinition) StartsWithConsonant() bool {
-	return false
-}
-
-type consonantVowelConsonantSyllableDefinition struct {
-	vowelSwap *templateSwap
-}
-
-func (d *consonantVowelConsonantSyllableDefinition) SwapVowelTemplate(swap templateSwap) {
-	d.vowelSwap = &swap
-}
-
-func newCVC() *consonantVowelConsonantSyllableDefinition {
-	return &consonantVowelConsonantSyllableDefinition{}
-}
-
-func (d *consonantVowelConsonantSyllableDefinition) Key() syllableKey {
-	return keyCVC
-}
-
-func (d *consonantVowelConsonantSyllableDefinition) Weight() int {
-	const chanceOfCVCSyllableOutOf10 = 2
-	return chanceOfCVCSyllableOutOf10
-}
-
-func (d *consonantVowelConsonantSyllableDefinition) Template() template {
-	if d.vowelSwap == nil {
-		return firstConsonant + vowel + lastConstant
-	}
-
-	return firstConsonant + d.vowelSwap.modifiedTemplate + lastConstant
-}
-
-func (d *consonantVowelConsonantSyllableDefinition) EnforceNoConsecutiveSingleVowels(_ syllableDefinition, _ GenerateRandomIntegerUpToFn) {
-	// CVC ends with a consonant, so no restrictions with following syllables
-}
-
-func (d *consonantVowelConsonantSyllableDefinition) SyllablesThatCanFollowThis() []syllableDefinition {
-	return onlyVowelStartingSyllables()
-}
-
-func (d *consonantVowelConsonantSyllableDefinition) StartsWithConsonant() bool {
-	return true
+func (d *_syllableDefinition) StartsWithConsonant() bool {
+	return d.key.StartsWithConsonant()
 }
 
 func pickRandomSwap(randomIndexPicker GenerateRandomIntegerUpToFn) *templateSwap {
 	chosenSwapIndex := randomIndexPicker(len(swaps))
-	swapKey := allSwaps[chosenSwapIndex]
-	swap := swaps[swapKey]
+	vowelTemplateSwapKey := allSwaps[chosenSwapIndex]
+	swap := swaps[vowelTemplateSwapKey]
 	return &swap
 }
 
