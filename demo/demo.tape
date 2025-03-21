@@ -12,12 +12,12 @@ Set MarginFill "#6B50FF"
 Set WindowBar Colorful
 
 # Type a command in the terminal.
-Type "./generate-word -n 3"
+Type "./generate-word -s 3"
 Enter
 Sleep 5s
-Type "./generate-word -n 5"
+Type "./generate-word -s 5"
 Enter
 Sleep 5s
-Type "./generate-word -n 7"
+Type "./generate-word -s 7"
 Enter
 Sleep 5s

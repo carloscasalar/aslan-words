@@ -17,7 +17,7 @@ func Test_cmd_should_generate_a_word_when_called_with_n3(t *testing.T) {
 
 	// Given
 	// the command line arguments are "-n3"
-	os.Args = []string{"path-to-cmd", "-n3"}
+	os.Args = []string{"path-to-cmd", "-s3"}
 
 	// When
 	// Call the main function
