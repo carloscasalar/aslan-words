@@ -7,7 +7,7 @@ import (
 )
 
 type commandOptions struct {
-	NumberOfSyllables int `short:"s" default:"2" long:"number-of-syllables" description:"Number of syllables of the aslan word to generate-word"`
+	NumberOfSyllables int `short:"s" default:"2" long:"number-of-syllables" description:"Number of syllables of the aslan word to generate"`
 }
 
 func readOptionsOrFail() commandOptions {
