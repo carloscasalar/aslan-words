@@ -10,78 +10,45 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-/*
-	   The Aslan language has four types of syllables:
-		 - those consisting of a single vowel (V),
-		 - those beginning with a consonant (CV),
-		 - those that ends with a consonant (VC),
-		 - and those that begin and end with a consonant (CVC).
-
-	   In Aslan words, the frequency of occurrence is, out of ten syllables,
-		 - three will be V,
-		 - three will be CV,
-		 - two will be VC,
-		 - and two will be CVC.
-
-	   No syllable ending with a consonant can be followed by a syllable that starts with a consonant, so
-	   A syllable of a single vowel cannot be directly followed by same syllable. For example, 'aa' cannot be
-	   but 'aeae' or 'aeei' would be OK.
-
-	   So:
-		 - V can be followed by V, CV, VC or CVC.
-		 - CV can be followed by V, CV, VC or CVC.
-		 - VC can be followed by V or VC.
-		 - CVC can be followed by V or VC.
-	     - following syllable sequences are not allowed: aa, ee, ii, oo, uu
-*/
-
 func TestGenerateTemplate_out_of_ten_syllables(t *testing.T) {
 	testCases := map[string]struct {
-		chance              int
+		expectedFrequency   int
 		expectedSyllableKey string
 	}{
-		"when random chance is 0, syllable should be V":   {0, "V"},
-		"when random chance is 1, syllable should be V":   {1, "V"},
-		"when random chance is 2, syllable should be V":   {2, "V"},
-		"when random chance is 3, syllable should be CV":  {3, "CV"},
-		"when random chance is 4, syllable should be CV":  {4, "CV"},
-		"when random chance is 5, syllable should be CV":  {5, "CV"},
-		"when random chance is 6, syllable should be VC":  {6, "VC"},
-		"when random chance is 7, syllable should be VC":  {7, "VC"},
-		"when random chance is 8, syllable should be CVC": {8, "CVC"},
-		"when random chance is 9, syllable should be CVC": {9, "CVC"},
+		"three of them should be vowel syllables (V)":                     {3, "V"},
+		"three of them should be consonant-vowel syllables (CV)":          {3, "CV"},
+		"two of them should be vowel-consonant syllables (VC)":            {2, "VC"},
+		"two of them should be consonant-vowel-consonant syllables (CVC)": {2, "CVC"},
 	}
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			var chancesGenerator syllable.GenerateRandomIntegerUpToFn
 			// Given
-			chancesGenerator = func(n int) int {
-				return tc.chance
-			}
+			syllableChancesGenerator := chanceGeneratorThatWillGenerate(t, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 
 			// When
-			template := syllable.GenerateTemplate(1, syllable.WithSyllableChanceGenerator(chancesGenerator))
+			templates := make([]syllable.TemplateDefinition, 10)
+			for i := range 10 {
+				templates[i] = syllable.GenerateTemplate(1, syllable.WithSyllableChanceGenerator(syllableChancesGenerator))
+			}
 
 			// Then
-			require.NotNil(t, template)
-			require.Len(t, template.SyllableKeySequence(), 1, "only one syllable is expected to be generated")
-			assert.Equal(t, tc.expectedSyllableKey, template.SyllableKeySequence()[0], "out of ten times, when chance is %d, the expected syllable key is %s", tc.chance, tc.expectedSyllableKey)
+			assert.Equal(t, tc.expectedFrequency, countSyllableKey(templates, tc.expectedSyllableKey))
 		})
 	}
 }
 
 func TestGenerateTemplate_the_syllable_ending_with_constant(t *testing.T) {
 	const (
-		vcChance  = 6
-		cvcChance = 8
+		vcChanceOver10  = 6
+		cvcChanceOver10 = 8
 	)
 	testCases := map[string]struct {
 		firstSyllableChance   int
 		forbiddenSyllableKeys []string
 	}{
-		"VC cannot be followed by a a syllable starting with a consonant":  {vcChance, []string{"CV", "CVC"}},
-		"CVC cannot be followed by a a syllable starting with a consonant": {cvcChance, []string{"CV", "CVC"}},
+		"VC cannot be followed by a a syllable starting with a consonant":  {vcChanceOver10, []string{"CV", "CVC"}},
+		"CVC cannot be followed by a a syllable starting with a consonant": {cvcChanceOver10, []string{"CV", "CVC"}},
 	}
 
 	for name, tc := range testCases {
@@ -162,6 +129,19 @@ func TestGenerateTemplate_when_two_consecutive_vowels_are_generated(t *testing.T
 		})
 	}
 
+}
+
+func countSyllableKey(templates []syllable.TemplateDefinition, key string) int {
+	var count int
+	for _, template := range templates {
+		if len(template.SyllableKeySequence()) == 0 {
+			continue
+		}
+		if template.SyllableKeySequence()[0] == key {
+			count++
+		}
+	}
+	return count
 }
 
 func chanceGeneratorThatWillGenerate(t *testing.T, sequence ...int) syllable.GenerateRandomIntegerUpToFn {
