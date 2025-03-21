@@ -30,28 +30,43 @@ var (
 	vowelWithOnlySingleU = removeFromTemplate(vowel, singleA, singleE, singleI, singleO)
 )
 
+type swapKey string
+
+const (
+	withoutSingleA  swapKey = "withoutSingleA"
+	withoutSingleE  swapKey = "withoutSingleE"
+	withoutSingleI  swapKey = "withoutSingleI"
+	withoutSingleO  swapKey = "withoutSingleO"
+	withoutSingleU  swapKey = "withoutSingleU"
+	withOnlySingleA swapKey = "withOnlySingleA"
+	withOnlySingleE swapKey = "withOnlySingleE"
+	withOnlySingleI swapKey = "withOnlySingleI"
+	withOnlySingleO swapKey = "withOnlySingleO"
+	withOnlySingleU swapKey = "withOnlySingleU"
+)
+
 type templateSwap struct {
 	modifiedTemplate template
-	reverseSwap      string
+	reverseSwap      swapKey
 }
 
 // swaps are used to enforce no consecutive single vowels are generated. They are meant to work as puzzle pieces
-var swaps = map[string]templateSwap{
-	"withoutSingleA":  {vowelWithoutSingleA, "withOnlySingleA"},
-	"withoutSingleE":  {vowelWithoutSingleE, "withOnlySingleE"},
-	"withoutSingleI":  {vowelWithoutSingleI, "withOnlySingleI"},
-	"withoutSingleO":  {vowelWithoutSingleO, "withOnlySingleO"},
-	"withoutSingleU":  {vowelWithoutSingleU, "withOnlySingleU"},
-	"withOnlySingleA": {vowelWithOnlySingleA, "withoutSingleA"},
-	"withOnlySingleE": {vowelWithOnlySingleE, "withoutSingleE"},
-	"withOnlySingleI": {vowelWithOnlySingleI, "withoutSingleI"},
-	"withOnlySingleO": {vowelWithOnlySingleO, "withoutSingleO"},
-	"withOnlySingleU": {vowelWithOnlySingleU, "withoutSingleU"},
+var swaps = map[swapKey]templateSwap{
+	withoutSingleA:  {vowelWithoutSingleA, withOnlySingleA},
+	withoutSingleE:  {vowelWithoutSingleE, withOnlySingleE},
+	withoutSingleI:  {vowelWithoutSingleI, withOnlySingleI},
+	withoutSingleO:  {vowelWithoutSingleO, withOnlySingleO},
+	withoutSingleU:  {vowelWithoutSingleU, withOnlySingleU},
+	withOnlySingleA: {vowelWithOnlySingleA, withoutSingleA},
+	withOnlySingleE: {vowelWithOnlySingleE, withoutSingleE},
+	withOnlySingleI: {vowelWithOnlySingleI, withoutSingleI},
+	withOnlySingleO: {vowelWithOnlySingleO, withoutSingleO},
+	withOnlySingleU: {vowelWithOnlySingleU, withoutSingleU},
 }
 
-var allSwaps = []string{
-	"withoutSingleA", "withoutSingleE", "withoutSingleI", "withoutSingleO", "withoutSingleU",
-	"withOnlySingleA", "withOnlySingleE", "withOnlySingleI", "withOnlySingleO", "withOnlySingleU",
+var allSwaps = []swapKey{
+	withoutSingleA, withoutSingleE, withoutSingleI, withoutSingleO, withoutSingleU,
+	withOnlySingleA, withOnlySingleE, withOnlySingleI, withOnlySingleO, withOnlySingleU,
 }
 
 type syllableKey string
