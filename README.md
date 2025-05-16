@@ -1,4 +1,4 @@
-# Aslan Words
+# Aslan Words [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/carloscasalar/aslan-words)
 
 This is a library for generating Aslan words according to the guidelines of the awesome [Pirates of Drinax](https://www.mongoosepublishing.com/products/the-pirates-of-drinax?srsltid=AfmBOoq1tbdk_O_QGAK5xoYQc13tXsNSOn8tu5wHto5TOTVtvqMkq-pH) campaign, in the Traveller RPG universe.
 
