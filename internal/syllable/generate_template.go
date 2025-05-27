@@ -124,3 +124,52 @@ func applyTemplateOptions(opts ...TemplateOption) *templateOptions {
 	}
 	return opt
 }
+
+// GenerateFemaleNameTemplate generates a template for a female Aslan name.
+// Female names are 2-4 syllables long and should be more likely to end in a vowel sound.
+func GenerateFemaleNameTemplate(numberOfSyllables int, opts ...TemplateOption) TemplateDefinition {
+	if numberOfSyllables < 1 {
+		return nil
+	}
+	options := applyTemplateOptions(opts...)
+	sequenceGenerator := newSyllableSequenceBuilder(options)
+
+	if numberOfSyllables == 1 {
+		// Ensure the single syllable is V or CV
+		possibleSyllables := []syllableDefinition{newV(), newCV()}
+		return []syllableDefinition{sequenceGenerator.pickRandomSyllable(possibleSyllables)}
+	}
+
+	// Generate the first n-1 syllables
+	firstSyllables := sequenceGenerator.randomSyllableSequence(numberOfSyllables - 1)
+	if firstSyllables == nil { // Should not happen if numberOfSyllables > 1
+		return nil
+	}
+
+	// For the last syllable, ensure it ends with a vowel
+	lastSyllableParent := firstSyllables[len(firstSyllables)-1]
+	possibleLastSyllables := []syllableDefinition{}
+	for _, s := range lastSyllableParent.SyllablesThatCanFollowThis() {
+		if !s.Key().EndsWithConsonant() { // V or CV
+			possibleLastSyllables = append(possibleLastSyllables, s)
+		}
+	}
+
+	// If no V or CV syllables can follow, fall back to any valid syllable
+	if len(possibleLastSyllables) == 0 {
+		possibleLastSyllables = lastSyllableParent.SyllablesThatCanFollowThis()
+	}
+
+	lastSyllable := sequenceGenerator.pickRandomSyllable(possibleLastSyllables)
+	lastSyllableParent.EnforceNoConsecutiveSingleVowels(lastSyllable, sequenceGenerator.vowelTemplateChanceGenerator)
+
+	return append(firstSyllables, lastSyllable)
+}
+
+// GenerateMaleNameTemplate generates a template for a male Aslan name.
+// Male names are 3-5 syllables long.
+func GenerateMaleNameTemplate(numberOfSyllables int, opts ...TemplateOption) TemplateDefinition {
+	// For now, male names use the standard generation logic.
+	// The distinction is primarily handled by the numberOfSyllables parameter passed by the caller.
+	return GenerateTemplate(numberOfSyllables, opts...)
+}

@@ -4,19 +4,28 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
+	"log" // Added log for fatal errors
+	"os"  // Added os import for os.Exit
 
 	"github.com/carloscasalar/aslan-words/pkg/aslanwords"
 )
 
+var osExit = os.Exit // Allow os.Exit to be mocked for testing
+
 func main() {
-	opts := readOptionsOrFail()
+	cliOpts := readOptionsOrFail() // Renamed to cliOpts to match opts.go
 
 	ctx := context.Background()
-	word, err := aslanwords.Generate(ctx, aslanwords.WithNumberOfSyllables(opts.NumberOfSyllables))
+	generatorOpts, err := cliOpts.ToAslanGeneratorOptions()
 	if err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		log.Printf("Error processing command-line options: %v", err)
+		osExit(1) // Use mocked exit
+	}
+
+	word, err := aslanwords.Generate(ctx, generatorOpts...)
+	if err != nil {
+		log.Printf("Unable to generate an Aslan word: %v", err)
+		osExit(1) // Use mocked exit
 	}
 
 	fmt.Println(word)
