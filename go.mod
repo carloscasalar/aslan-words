@@ -7,7 +7,7 @@ toolchain go1.24.1
 require (
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/s0rg/fantasyname v1.3.7
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 )
 
 require (
